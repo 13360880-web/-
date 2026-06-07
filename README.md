@@ -22,9 +22,3 @@
   - `addProduct(string _id, string _name, string _origin, string _date)`: 資料上鏈。
   - `getProduct(string _id)`: 唯讀溯源查詢（帶有 `require` 查無資料阻擋機制）。
 
-## 💻 本地執行與測試步驟
-
-### 1. 克隆專案 (Clone Project)
-```bash
-git clone https://github.com/13360880-web/-/blob/main/README.md
-cd <專案資料夾名稱>
