@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>農產品溯源系統</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-hover: #1b5e20;
+            --secondary-color: #0288d1;
+            --secondary-hover: #01579b;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 30px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            color: #495057;
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: white;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-query {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-query:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .status-box {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-loading {
+            display: block;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border-left: 4px solid #2196f3;
+        }
+
+        .status-success {
+            display: block;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border-left: 4px solid #4caf50;
+        }
+
+        .status-error {
+            display: block;
+            background-color: #ffebee;
+            color: #b71c1c;
+            border-left: 4px solid #f44336;
+        }
+
+        .result-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .result-item {
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .result-item strong {
+            color: #6c757d;
+            width: 95px;
+            display: inline-block;
+        }
+
+        .wallet-info {
+            text-align: right;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: -20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🌱 農產品溯源系統</h2>
+    <div id="walletAddress" class="wallet-info">未連接加密錢包</div>
+
+    <div class="section">
+        <h3>🚜 新增生產資料（生產者上鏈）</h3>
+        <div class="form-group">
+            <label for="prod_id">產品 ID</label>
+            <input id="prod_id" placeholder="例如: P2026001">
+        </div>
+        <div class="form-group">
+            <label for="prod_name">農產品名稱</label>
+            <input id="prod_name" placeholder="例如: 有機蜜富士蘋果">
+        </div>
+        <div class="form-group">
+            <label for="prod_origin">產地來源</label>
+            <input id="prod_origin" placeholder="例如: 台灣台中梨山">
+        </div>
+        <div class="form-group">
+            <label for="prod_date">採收/包裝日期</label>
+            <input id="prod_date" placeholder="例如: 2026-06-07">
+        </div>
+        <button class="btn btn-submit" onclick="addProduct()">確認無誤，簽署交易上鏈</button>
+        <div id="submitStatus" class="status-box"></div>
+    </div>
+
+    <div class="section">
+        <h3>🔍 消費者溯源查詢（唯讀驗證）</h3>
+        <div class="form-group">
+            <label for="searchId">輸入產品 ID</label>
+            <input id="searchId" placeholder="請輸入欲查詢的產品編號">
+        </div>
+        <button class="btn btn-query" onclick="getProduct()">向區塊鏈請求查詢</button>
+        <div id="queryStatus" class="status-box"></div>
+        
+        <div id="resultPanel" class="result-panel">
+            <div class="result-item"><strong>🍏 產品名稱：</strong><span id="res_name"></span></div>
+            <div class="result-item"><strong>📍 產地來源：</strong><span id="res_origin"></span></div>
+            <div class="result-item"><strong>📅 生產日期：</strong><span id="res_date"></span></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+<script>
+let provider, signer, contract;
+
+// ⚠️ 重要：請在 Remix 部署完成後，將下方的地址替換為你的智慧合約地址
+const contractAddress = ""; 
+
+// 對應你提供的 Traceability 智慧合約的完整 ABI 簽名
+const abi = [
+    "function addProduct(string _id, string _name, string _origin, string _date) public",
+    "function getProduct(string _id) public view returns (string, string, string)",
+    "function products(string) public view returns (string name, string origin, string date, bool exists)"
+];
+
+// 初始化與 MetaMask 的連接環境
+async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            // 請求使用者授權帳戶連接
+            const accounts = await provider.send("eth_requestAccounts", []);
+            
+            signer = provider.getSigner();
+            contract = new ethers.Contract(contractAddress, abi, signer);
+            
+            // 介面更新錢包地址資訊
+            document.getElementById("walletAddress").innerText = `已連接錢包: ${accounts[0].substring(0,6)}...${accounts[0].substring(38)}`;
+            console.log("區塊鏈節點與智慧合約連線初始化成功。");
+        } catch (error) {
+            console.error("使用者拒絕錢包連接", error);
+            showStatus("submitStatus", "error", "❌ 請允許連接 MetaMask 錢包以使用系統功能。");
+        }
+    } else {
+        alert("未偵測到加密錢包擴充功能！請先安裝並登入 MetaMask。");
+    }
+}
+
+// 網頁開啟時自動呼叫連線
+window.addEventListener('load', connectWallet);
+
+// 輔助函式：切換並顯示網頁狀態提示
+function showStatus(elementId, type, message) {
+    const box = document.getElementById(elementId);
+    box.style.display = "block";
+    box.className = "status-box status-" + type;
+    box.innerText = message;
+}
+
+// 輔助函式：隱藏狀態提示
+function hideStatus(elementId) {
+    document.getElementById(elementId).style.display = "none";
+}
+
+// 處理資料上鏈邏輯
+async function addProduct() {
+    const id = document.getElementById("prod_id").value.trim();
+    const name = document.getElementById("prod_name").value.trim();
+    const origin = document.getElementById("prod_origin").value.trim();
+    const date = document.getElementById("prod_date").value.trim();
+    const statusId = "submitStatus";
+
+    if (!id || !name || !origin || !date) {
+        showStatus(statusId, "error", "⚠️ 所有欄位皆為必填項目，請填寫完整後再點擊上鏈。");
+        return;
+    }
+
+    try {
+        // 【上鏈防錯前端優化】：先利用合約自動產生的 public getter 檢查該 ID 是否在區塊鏈上已存在
+        showStatus(statusId, "loading", "正在查詢區塊鏈分散式帳本，確認 ID 是否重複...");
+        const existCheck = await contract.products(id);
+        if (existCheck.exists) {
+            showStatus(statusId, "error", `❌ 上鏈失敗：產品編號 "${id}" 已經在鏈上被註冊過，無法覆蓋。`);
+            return;
+        }
+
+        showStatus(statusId, "loading", "請於 MetaMask 彈出視窗中確認並簽署交易...");
+        
+        // 呼叫智慧合約變更鏈上狀態的 addProduct 函式
+        const tx = await contract.addProduct(id, name, origin, date);
+        
+        showStatus(statusId, "loading", "交易已廣播至區塊鏈網絡，等待區塊打包確認中（請勿關閉網頁）...");
+        
+        // 等待交易被寫入區塊
+        await tx.wait();
+
+        showStatus(statusId, "success", `🎉 成功！產品 [${id}] 的溯源資料已成功寫入 Ethereum 區塊鏈。`);
+        
+        // 清空表單輸入值
+        document.getElementById("prod_id").value = "";
+        document.getElementById("prod_name").value = "";
+        document.getElementById("prod_origin").value = "";
+        document.getElementById("prod_date").value = "";
+    } catch (error) {
+        console.error("上鏈異常詳細資訊:", error);
+        if (error.code === 4001) {
+            showStatus(statusId, "error", "❌ 使用者已取消交易簽署。");
+        } else if (error.reason) {
+            showStatus(statusId, "error", "❌ 智慧合約拒絕執行：" + error.reason);
+        } else {
+            showStatus(statusId, "error", "❌ 交易送出異常，詳細錯誤請按 F12 檢視 Console 資訊。");
+        }
+    }
+}
+
+// 處理消費者資料查詢邏輯
+async function getProduct() {
+    const searchId = document.getElementById("searchId").value.trim();
+    const statusId = "queryStatus";
+    const resultPanel = document.getElementById("resultPanel");
+
+    // 重設查詢介面
+    resultPanel.style.display = "none";
+    hideStatus(statusId);
+
+    if (!searchId) {
+        showStatus(statusId, "error", "⚠️ 請輸入要回溯的產品 ID。");
+        return;
+    }
+
+    try {
+        showStatus(statusId, "loading", "正在向區塊鏈節點讀取最新分散式資料...");
+        
+        // 呼叫智慧合約唯讀的 getProduct 函式
+        const result = await contract.getProduct(searchId);
+
+        // 成功讀取後隱藏提示，填入並顯示結果區塊
+        hideStatus(statusId);
+        document.getElementById("res_name").innerText = result[0];
+        document.getElementById("res_origin").innerText = result[1];
+        document.getElementById("res_date").innerText = result[2];
+        resultPanel.style.display = "block";
+
+    } catch (error) {
+        console.error("查詢異常詳細資訊:", error);
+        // 捕捉 require(products[_id].exists, "Product not found"); 觸發的異常
+        if (error.reason || error.message.includes("Product not found")) {
+            showStatus(statusId, "error", `❌ 驗證失敗：區塊鏈上找不到產品編號 "${searchId}" 的資料。`);
+        } else {
+            showStatus(statusId, "error", "❌ 讀取區塊鏈資料時發生未預期異常。");
+        }
+    }
+}
+</script>
+
+</body>
+</html>
