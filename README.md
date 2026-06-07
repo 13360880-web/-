@@ -26,5 +26,5 @@
 
 ### 1. 克隆專案 (Clone Project)
 ```bash
-git clone <你的 GitHub 專案網址>
+git clone https://github.com/13360880-web/-/blob/main/README.md
 cd <專案資料夾名稱>
